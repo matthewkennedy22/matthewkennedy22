@@ -6,6 +6,24 @@ I build analytics systems that solve real-world infrastructure, operational, and
 
 ## Featured Projects
 
+### Agentic Essay-Writing Workflow (LangGraph + Tavily)
+
+Python | Agentic AI | LangGraph | LangChain | OpenAI | Tool Use | Tavily | Gradio | SQLite Checkpoints
+
+An **agentic multi-stage LangGraph** pipeline built as a structured **essay-writing assistant**: outline-style planning, **tool-grounded web research** (Pydantic-typed Tavily queries), draft generation, critic-driven reflection, and conditional re-retrieval—looping under a revision cap with **SqliteSaver** checkpointing per thread and **streamed** node traces for observability.
+
+Technically, the emphasis is **inspectable agentic control flow** (nodes, conditional edges, `graph.stream`) rather than one monolithic prompt; grounding uses **live search APIs** instead of embedding-store RAG, with a Gradio UI for interactive runs.
+
+Tech Stack
+
+Python, LangGraph, LangChain, OpenAI API, Tavily, Pydantic, Gradio, SQLite (langgraph-checkpoint-sqlite), Jupyter
+
+Repo
+
+https://github.com/matthewkennedy22/langgraph-essay-writer
+
+---
+
 ### Hyperscale Data Center Optimization Tool
 
 Python | DuckDB | Streamlit | Climate Modeling
