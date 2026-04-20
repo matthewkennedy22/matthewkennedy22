@@ -1,0 +1,15 @@
+# Lesson 2: LangGraph Components — workbooks/lesson-02-langgraph-components.ipynb
+#
+#   pip install -r requirements-lesson-02.txt
+#
+# Optional: `abot.graph.get_graph().draw_png()` may need Graphviz on the system
+# (e.g. conda: conda install -c conda-forge graphviz) and sometimes pygraphviz.
+
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+langchain-community>=0.3.0
+tavily-python>=0.5.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+ipykernel>=6.0.0

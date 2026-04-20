@@ -6,6 +6,22 @@ Collection of analytics systems that solve real-world infrastructure, operationa
 
 ## Featured Projects
 
+### Adventure Works Bike Shop Dashboard (Power BI)
+
+Power BI | DAX | Power Query | Data Modeling | Business Intelligence
+
+Built an end-to-end sales analytics dashboard for Adventure Works to track revenue, returns, customer behavior, and product performance. The report uses cleaned CSV data sources, dimensional modeling, and DAX measures to deliver executive KPIs and drilldown views for operational decision-making.
+
+Live Dashboard
+
+https://app.powerbi.com/groups/me/reports/0c30d496-30e6-409f-ac3f-6c19bafcb6b5/ReportSection28fc774ae9054691e9b4?experience=power-bi&bookmarkGuid=Bookmarkd03d17222735e25c1a41
+
+Project Folder
+
+`Power-BI-Adventure-Works-Dashboard`
+
+---
+
 ### Agentic Essay-Writing Workflow (LangGraph + Tavily)
 
 Python | Agentic AI | LangGraph | LangChain | OpenAI | Tool Use | Tavily | Gradio | SQLite Checkpoints

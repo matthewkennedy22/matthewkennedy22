@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COVID Ensemble Learning Models: Findings Summary</title>
+  <style>
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      color: #222;
+      background: #fafafa;
+    }
+    h1 {
+      font-size: 1.75rem;
+      border-bottom: 2px solid #333;
+      padding-bottom: 0.5rem;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin-top: 2rem;
+      color: #333;
+    }
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 1.25rem;
+      color: #444;
+    }
+    p, li {
+      margin: 0.5rem 0;
+    }
+    ul {
+      padding-left: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: #333;
+      color: #fff;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background: #f8f8f8;
+    }
+    code {
+      font-family: 'Consolas', 'Monaco', monospace;
+      background: #eee;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 2rem 0;
+    }
+    .footer {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 2rem;
+      font-style: italic;
+    }
+    strong {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<h1>COVID Ensemble Learning Models: Findings Summary</h1>
+
+<p>This document summarizes the setup, results, and conclusions from three ensemble-learning notebooks for binary COVID prediction (Result: positive vs negative) using symptoms and demographics on the cleaned COVID dataset.</p>
+
+<hr>
+
+<h2>1. Shared Context</h2>
+<ul>
+  <li><strong>Data:</strong> <code>COVID_DATA_cleaned.csv</code> — symptoms (Cough, Fever, Sore_Throat, Shortness_Of_Breath, Headache), demographics (Age_60_And_Above, Sex, Contact), and target <strong>Result</strong>.</li>
+  <li><strong>Split:</strong> 60% train / 40% test, stratified, <code>random_state=321</code>. Train: <strong>587,095</strong> rows | Test: <strong>391,398</strong> rows.</li>
+  <li><strong>Class imbalance:</strong> ~90% negative, ~10% positive. Accuracy alone is misleading; tuning and evaluation use F1/Fβ, sensitivity, specificity, and AUC.</li>
+  <li><strong>Tuning strategy:</strong> All models tune on a <strong>60k stratified sample</strong> for speed, then the best estimator is <strong>refit on the full training set</strong> and evaluated on the held-out test set.</li>
+</ul>
+
+<hr>
+
+<h2>2. Model Setup and Tuning</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>Random Forest</th>
+      <th>HistGradientBoosting</th>
+      <th>XGBoost</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Tuning search</strong></td><td>RandomizedSearchCV</td><td>RandomizedSearchCV</td><td>RandomizedSearchCV</td></tr>
+    <tr><td><strong>Candidates</strong></td><td>30</td><td>30</td><td>30</td></tr>
+    <tr><td><strong>CV</strong></td><td>5-fold</td><td>3-fold</td><td>3-fold</td></tr>
+    <tr><td><strong>Scoring</strong></td><td>F1</td><td>Fβ (β=2)</td><td>Fβ (β=2)</td></tr>
+    <tr><td><strong>Imbalance</strong></td><td><code>class_weight='balanced'</code></td><td>—</td><td><code>scale_pos_weight</code> from data</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>F1</strong> (Random Forest): balances precision and recall equally.</li>
+  <li><strong>Fβ with β=2</strong> (HistGB, XGBoost): favors <strong>recall</strong> over precision, suitable for “catch more cases” with some control on false positives.</li>
+</ul>
+
+<hr>
+
+<h2>3. Random Forest</h2>
+<ul>
+  <li><strong>Best F1 params (from run):</strong> <code>n_estimators=200</code>, <code>min_samples_split=50</code>, <code>min_samples_leaf=5</code>, <code>max_features='sqrt'</code>, <code>max_depth=8</code>.</li>
+</ul>
+<h3>Threshold sweep (test set)</h3>
+<p>Lower thresholds increase recall and false positives; higher thresholds increase precision and false negatives.</p>
+<table>
+  <thead>
+    <tr><th>Threshold</th><th>Recall</th><th>Precision</th><th>FP</th><th>FN</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0.300</td><td>0.794</td><td>0.156</td><td>176,591</td><td>8,492</td></tr>
+    <tr><td>0.350</td><td>0.794</td><td>0.156</td><td>176,591</td><td>8,492</td></tr>
+    <tr><td>0.355</td><td>0.576</td><td>0.393</td><td>36,742</td><td>17,472</td></tr>
+    <tr><td>0.360</td><td>0.576</td><td>0.393</td><td>36,742</td><td>17,472</td></tr>
+    <tr><td>0.365</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.370</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.375</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.380</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.400</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+  </tbody>
+</table>
+<h3>Evaluation at chosen threshold (e.g. t = 0.355)</h3>
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Accuracy</td><td>0.8615</td></tr>
+    <tr><td>Sensitivity (recall positive)</td><td>0.576</td></tr>
+    <tr><td>Specificity (recall negative)</td><td>0.895</td></tr>
+    <tr><td><strong>AUC</strong></td><td><strong>0.7695</strong></td></tr>
+  </tbody>
+</table>
+<h3>Feature importance (Gini)</h3>
+<ol>
+  <li><strong>Contact</strong> (~0.51)</li>
+  <li>Fever (~0.16)</li>
+  <li>Headache (~0.15)</li>
+  <li>Cough (~0.10)</li>
+  <li>Sore_Throat (~0.05)</li>
+  <li>Shortness_Of_Breath (~0.01)</li>
+  <li>Sex (~0.01)</li>
+  <li>Age_60_And_Above (~0.001)</li>
+</ol>
+<p><strong>Contact</strong> is by far the strongest predictor; symptoms and demographics add smaller contributions.</p>
+
+<hr>
+
+<h2>4. Histogram Gradient Boosting</h2>
+<ul>
+  <li>Tuned for <strong>Fβ (β=2)</strong>; early stopping and validation fraction used in training.</li>
+</ul>
+<h3>Threshold sweep (test set)</h3>
+<table>
+  <thead>
+    <tr><th>Threshold</th><th>Recall</th><th>Precision</th><th>FP</th><th>FN</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0.300</td><td>0.526</td><td>0.629</td><td>12,791</td><td>19,536</td></tr>
+    <tr><td>0.350</td><td>0.526</td><td>0.629</td><td>12,791</td><td>19,536</td></tr>
+    <tr><td>0.355</td><td>0.526</td><td>0.629</td><td>12,791</td><td>19,536</td></tr>
+    <tr><td>0.360</td><td>0.526</td><td>0.629</td><td>12,791</td><td>19,536</td></tr>
+    <tr><td>0.365</td><td>0.516</td><td>0.637</td><td>12,142</td><td>19,936</td></tr>
+    <tr><td>0.370</td><td>0.511</td><td>0.641</td><td>11,766</td><td>20,159</td></tr>
+    <tr><td>0.375</td><td>0.511</td><td>0.641</td><td>11,766</td><td>20,159</td></tr>
+    <tr><td>0.380</td><td>0.509</td><td>0.643</td><td>11,638</td><td>20,248</td></tr>
+    <tr><td>0.400</td><td>0.509</td><td>0.643</td><td>11,638</td><td>20,248</td></tr>
+    <tr><td>0.450</td><td>0.509</td><td>0.643</td><td>11,638</td><td>20,248</td></tr>
+    <tr><td>0.500</td><td>0.407</td><td>0.697</td><td>7,283</td><td>24,440</td></tr>
+  </tbody>
+</table>
+<p>HistGB tends to give more conservative probability estimates (less extreme recall at low thresholds) and higher precision at similar recall.</p>
+<h3>Evaluation at chosen threshold (e.g. THRESHOLD = 0.36)</h3>
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Accuracy</td><td>0.9185</td></tr>
+    <tr><td>Sensitivity (recall positive)</td><td>0.509</td></tr>
+    <tr><td>Specificity (recall negative)</td><td>0.967</td></tr>
+    <tr><td><strong>AUC</strong></td><td><strong>0.7695</strong></td></tr>
+  </tbody>
+</table>
+<h3>Feature importance (permutation, 30k test sample)</h3>
+<ol>
+  <li><strong>Contact</strong> (~0.032)</li>
+  <li>Headache (~0.021)</li>
+  <li>Sore_Throat (~0.009)</li>
+  <li>Fever (~0.005)</li>
+  <li>Shortness_Of_Breath (~0.002)</li>
+  <li>Age_60_And_Above (~0.001)</li>
+  <li>Cough (~0.001)</li>
+  <li>Sex (slightly negative)</li>
+</ol>
+<p><strong>Contact</strong> again leads; order and magnitudes differ from RF (permutation importance is on a different scale and sample).</p>
+
+<hr>
+
+<h2>5. XGBoost</h2>
+<ul>
+  <li>Tuned for <strong>Fβ (β=2)</strong>; <code>scale_pos_weight</code> set from training class ratio for imbalance.</li>
+</ul>
+<h3>Threshold sweep (test set)</h3>
+<table>
+  <thead>
+    <tr><th>Threshold</th><th>Recall</th><th>Precision</th><th>FP</th><th>FN</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0.300</td><td>0.794</td><td>0.156</td><td>176,591</td><td>8,492</td></tr>
+    <tr><td>0.350</td><td>0.794</td><td>0.156</td><td>176,591</td><td>8,492</td></tr>
+    <tr><td>0.355</td><td>0.576</td><td>0.393</td><td>36,742</td><td>17,472</td></tr>
+    <tr><td>0.360</td><td>0.576</td><td>0.393</td><td>36,742</td><td>17,472</td></tr>
+    <tr><td>0.365</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.370</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.375</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.380</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.400</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.450</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.500</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.550</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+    <tr><td>0.600</td><td>0.542</td><td>0.599</td><td>14,917</td><td>18,888</td></tr>
+  </tbody>
+</table>
+<p>XGBoost can reach high recall at low thresholds but at the cost of many false positives. At <strong>t = 0.37</strong> recall and precision are balanced (0.54 / 0.60).</p>
+<h3>Evaluation at chosen threshold (THRESHOLD = 0.37)</h3>
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Accuracy</td><td>0.9135</td></tr>
+    <tr><td>Sensitivity (recall positive)</td><td>0.542</td></tr>
+    <tr><td>Specificity (recall negative)</td><td>0.957</td></tr>
+    <tr><td><strong>AUC</strong></td><td><strong>0.7695</strong></td></tr>
+  </tbody>
+</table>
+<p>At <strong>threshold 0.37</strong> XGBoost is run in a more balanced regime: sensitivity 0.54, specificity 0.96, and accuracy 0.91, with fewer false positives than at very low thresholds.</p>
+<h3>Feature importance (gain-style)</h3>
+<ol>
+  <li><strong>Contact</strong> (~0.55)</li>
+  <li>Headache (~0.17)</li>
+  <li>Fever (~0.15)</li>
+  <li>Cough (~0.06)</li>
+  <li>Sore_Throat (~0.04)</li>
+  <li>Shortness_Of_Breath (~0.02)</li>
+  <li>Sex (~0.01)</li>
+  <li>Age_60_And_Above (~0.003)</li>
+</ol>
+<p>Again <strong>Contact</strong> dominates; ordering is similar to Random Forest.</p>
+
+<hr>
+
+<h2>6. Cross-Model Comparison</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>AUC</th>
+      <th>Accuracy (at chosen t)</th>
+      <th>Sensitivity</th>
+      <th>Specificity</th>
+      <th>Operating point</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Random Forest</td><td>0.7695</td><td>0.86</td><td>0.58</td><td>0.90</td><td>t ≈ 0.355, balanced</td></tr>
+    <tr><td>HistGradientBoosting</td><td>0.7695</td><td>0.92</td><td>0.51</td><td>0.97</td><td>t = 0.36, precision-oriented</td></tr>
+    <tr><td>XGBoost</td><td>0.7695</td><td>0.91</td><td>0.54</td><td>0.96</td><td>t = 0.37, balanced</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>AUC is the same (0.7695)</strong> across all three models — discrimination ability is comparable; differences are in <strong>where</strong> each model is run (threshold choice) and how probability distributions behave.</li>
+  <li><strong>Random Forest</strong> at t≈0.355 gives a middle ground: moderate sensitivity, good specificity, high accuracy.</li>
+  <li><strong>HistGradientBoosting</strong> at t=0.36 is the most precision- and specificity-heavy: fewer false positives, fewer positives predicted overall.</li>
+  <li><strong>XGBoost</strong> at t=0.37 gives a balanced operating point: sensitivity 0.54, specificity 0.96, accuracy 0.91 (see threshold sweep table above for other options, e.g. lower t for higher recall).</li>
+</ul>
+<p>For a <strong>hospital with limited space</strong>, the threshold sweep in each notebook allows choosing a point that balances “catching cases” (recall) vs “not over-admitting” (precision/specificity). No single threshold fits all; the same model can be used at different thresholds for different policies.</p>
+
+<hr>
+
+<h2>7. Feature Importance: Consistency Across Models</h2>
+<ul>
+  <li><strong>Contact</strong> is the dominant predictor in all three models (RF, HistGB permutation, XGBoost).</li>
+  <li><strong>Fever, Headache, Cough</strong> are next most important in RF and XGBoost; HistGB’s permutation order differs but still highlights Contact and Headache.</li>
+  <li><strong>Shortness_Of_Breath, Sex, Age_60_And_Above</strong> have smaller (or minimal) importance in these runs.</li>
+</ul>
+<p>This supports that <strong>known contact</strong> is the strongest single feature in this dataset for predicting positive COVID result, with symptoms and demographics adding secondary signal.</p>
+
+<hr>
+
+<h2>8. Conclusions and Next Steps</h2>
+<ol>
+  <li><strong>Discrimination (AUC)</strong> is equivalent across the three ensembles (~0.77); choice among them can be driven by interpretability, speed, or desired probability/calibration behavior rather than AUC.</li>
+  <li><strong>Threshold choice</strong> is critical: the same model can be run at a higher threshold (fewer admissions, higher precision) or lower threshold (more cases caught, lower precision). The notebooks’ threshold sweeps support this decision.</li>
+  <li><strong>Contact</strong> is the most important predictor; collection and quality of contact history should be prioritized. Symptoms and demographics still add value for prediction and interpretation.</li>
+  <li><strong>Next steps to consider:</strong>
+    <ul>
+      <li>Try other operating points (e.g. fix a target recall and choose threshold to meet it).</li>
+      <li>Compare calibration (reliability diagrams) across the three models.</li>
+      <li>If needed, explore resampling (e.g. SMOTE) or class weights further to improve recall without excessive false positives.</li>
+      <li>Validate on a separate time period or geography if available.</li>
+      <li>Consider logistic regression or simpler models for interpretability and comparison.</li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<p class="footer">Summary derived from: <code>COVID_Random_Forest_Analysis.ipynb</code>, <code>COVID_HistGradientBoosting_Analysis.ipynb</code>, and <code>COVID_XGBoost_Analysis.ipynb</code>.</p>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Power BI temporary and local files
+*.tmp
+*.temp
+*.bak
+*.lock
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Local credentials or machine-specific settings
+*.pbi.localSettings.json
+*.pbi.user.json
+
+# Optional: ignore very large local extracts if created
+*.parquet
+*.feather
