@@ -130,6 +130,28 @@ https://github.com/matthewkennedy22/covid-ml-symptom-prediction
 
 ---
 
+### Olist E-Commerce Business Insights (Kaggle)
+
+Python | Pandas | NumPy | Matplotlib | SQLite | scikit-learn | Jupyter
+
+End-to-end practice project on the [Brazilian E-Commerce (Olist)](https://www.kaggle.com/datasets/olist/brazilian-ecommerce) dataset, modeled as a consulting-style analysis: **cleaning and joining** multiple CSVs (with **SQLite** for table organization and merges), **feature-style metrics** such as **customer LTV**, **delivery performance**, **RFM**-style customer scoring, and **churn**-related signals, **EDA** with Matplotlib, and **ML extensions** including **KMeans**-based **customer segmentation** and a **logistic regression** look at **delivery delay** classification.
+
+The notebook in this repo is the same artifact published on Kaggle (Kaggle-friendly imports: **Matplotlib** only for plotting, no Seaborn).
+
+Tech Stack
+
+Python, pandas, NumPy, Matplotlib, SQLite, scikit-learn, Jupyter
+
+Project Folder
+
+`Olist-E-Commerce-Business-Insights`
+
+Kaggle
+
+https://www.kaggle.com/code/mattkennedy22/olist-e-commerce-business-insights-project
+
+---
+
 ## Contact
 
 Matthew Kennedy
