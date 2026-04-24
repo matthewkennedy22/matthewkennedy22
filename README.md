@@ -14,7 +14,7 @@ Built an end-to-end sales analytics dashboard for Adventure Works to track reven
 
 Repo
 
-https://github.com/matthewkennedy22/Power-BI-Adventure-Works-Dashboard
+[https://github.com/matthewkennedy22/Power-BI-Adventure-Works-Dashboard](https://github.com/matthewkennedy22/Project-Portfilio/tree/main/Power-BI-Adventure-Works-Dashboard)
 
 ---
 
